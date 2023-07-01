@@ -10,6 +10,5 @@ int main()
     cout << a[0] << a[1] << endl;
     vector<int> b = a;
     cout << b[0] << b[1] << endl;
-
     return 0;
 }
