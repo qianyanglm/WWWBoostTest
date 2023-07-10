@@ -1,14 +1,19 @@
 ﻿#include "boost/lexical_cast.hpp"
 #include <iostream>
 #include <string>
-#include <vector>
-using namespace std;
 
 int main()
 {
-    vector<int> a(2, 0);
-    cout << a[0] << a[1] << endl;
-    vector<int> b = a;
-    cout << b[0] << b[1] << endl;
+    using namespace std;
+    cout << "Enter your weight: ";
+    float weight;
+    cin >> weight;
+    string gain = "A 10% increase raises ";
+    string wt = boost::lexical_cast<string>(weight);
+    gain = gain + wt + " to ";// string operator()
+    weight = 1.1 * weight;
+    gain = gain + boost::lexical_cast<string>(weight) + ".";
+    cout << gain << endl;
+    // system("pause");
     return 0;
 }
