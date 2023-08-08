@@ -1,10 +1,11 @@
-﻿#include <exception>
+﻿#include <climits>
+#include <exception>
 #include <iostream>
 using namespace std;
 
 int main()
 {
-    cout << "hello world\n"
+    cout << INT32_MAX
          << endl;
     return 0;
 }
