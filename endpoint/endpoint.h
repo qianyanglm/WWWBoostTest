@@ -1,9 +1,49 @@
-﻿#pragma once
-extern int client_end_point();
-extern int server_end_point();
-extern int create_tcp_socket();
-extern int create_acceptor_socket();
-extern int bind_acceptor_socket();
-extern int connect_to_end();
-extern int dns_connect_to_end();
-extern int accept_new_connection();
+﻿// ThreadPool.h
+#ifndef __THREAD_POOL_H__
+#define __THREAD_POOL_H__
+#include <atomic>
+#include <condition_variable>
+#include <functional>
+#include <mutex>
+#include <queue>
+#include <thread>
+#include <vector>
+
+namespace threadpool
+{
+    class ThreadPool
+    {
+        using TaskType = std::function<void(void *)>;
+
+        static const int INIT_NUM = 1;
+        static const int MAX_NUM = 4;
+        static const int MAX_IDLE_TIME_SECOND = 6;
+
+    public:
+        ThreadPool(int initNum, int maxNum, int idleSec);
+        ThreadPool();
+        ~ThreadPool();
+
+    public:
+        void AddTask(const TaskType &task, void *arg);
+
+    private:
+        void Init();
+        void ThreadRoutine(int index);
+        void PoolGrow();
+
+    private:
+        int _initNum;
+        int _maxNum;
+        int _idleSec;
+        bool _stop;
+        std::queue<std::pair<TaskType, void *>> _taskQueue;
+        std::vector<std::thread *> _pool;
+        std::mutex _mutex;
+        std::condition_variable _cond;
+        std::atomic<int> _busyCount;
+        std::atomic<int> _threadCount;
+    };
+}// namespace threadpool
+
+#endif// __THREAD_POOL_H__
