@@ -22,13 +22,13 @@ public:
     auto enqueue(F &&f, Args &&...args) -> std::future<typename std::result_of<F(Args...)>::type>;
 
 private:
-    std::vector<std::thread> _workers;       // 工作线程组
-    std::queue<std::function<void()>> _tasks;//任务队列
+    std::vector<std::thread> workers;       // 工作线程组
+    std::queue<std::function<void()>> tasks;//任务队列
 
     //异步
-    std::mutex _queueMutex;            //队列互斥锁
-    std::condition_variable _condition;//条件变量
-    bool _stop;                        // 线程池停止标志
+    std::mutex queueMutex;            //队列互斥锁
+    std::condition_variable condition;//条件变量
+    bool stop;                        // 线程池停止标志
 };
 
 // 设置线程任务，启动一些工作线程
@@ -40,14 +40,15 @@ ThreadPool::ThreadPool(size_t threads)
         // 线程内不断的从任务队列取任务执行
         // 1. 从任务队列中获取任务（需要保护临界区）
         // 2. 执行任务
-        _workers.emplace_back([this] {
+        workers.emplace_back([this]
+                             {
             for (;;)
             {
                 std::function<void()> task;
 
                 {
                     // 拿锁(独占所有权式)
-                    std::unique_lock<std::mutex> lock(this->_queueMutex);
+                    std::unique_lock<std::mutex> lock(this->queueMutex);
 
                     // 等待唤醒（等待条件成立），条件是停止或者任务队列中有任务
 
@@ -56,18 +57,19 @@ ThreadPool::ThreadPool(size_t threads)
                     一旦收到其他线程notify_*唤醒，则再次lock，然后进行条件判断
                     当[return this->stop || !this->tasks.empty()]的结果为false将阻塞
                     条件为true时候解除阻塞。此时lock依然为锁住状态*/
-                    this->_condition.wait(lock, [this] { return this->_stop || !this->_tasks.empty(); });
+                    this->condition.wait(lock, [this]
+                    { return this->stop || !this->tasks.empty(); }
+                    );
 
                     // 如果线程池停止或者任务队列为空，结束返回
-                    if (this->_stop && this->_tasks.empty())
+                    if (this->stop && this->tasks.empty())
                         return;
-                    task = std::move(this->_tasks.front());
-                    this->_tasks.pop();
+                    task = std::move(this->tasks.front());
+                    this->tasks.pop();
                 }
 
                 task();
-            }
-        });
+            } });
     }
 }
 
@@ -86,16 +88,17 @@ auto ThreadPool::enqueue(F &&f, Args &&...args) -> std::future<typename std::res
 
     {
         // 独占拿锁
-        std::unique_lock<std::mutex> lock(_queueMutex);
+        std::unique_lock<std::mutex> lock(queueMutex);
         //不允许入队到已经停止的线程池
-        if (_stop) throw std::runtime_error("enqueue on stopped ThreadPool");
+        if (stop) throw std::runtime_error("enqueue on stopped ThreadPool");
 
         // 将任务添加到任务队列
-        _tasks.emplace([task]() { (*task)(); });
+        tasks.emplace([task]()
+                      { (*task)(); });
     }
 
     //发送通知，唤醒某一个工作线程执行任务
-    _condition.notify_all();
+    condition.notify_all();
     return res;
 }
 
@@ -103,14 +106,14 @@ ThreadPool::~ThreadPool()
 {
     {
         //拿锁
-        std::unique_lock<std::mutex> lock(_queueMutex);
-        _stop = true;//停止标志置true
+        std::unique_lock<std::mutex> lock(queueMutex);
+        stop = true;//停止标志置true
     }
 
     // 通知所有工作线程，唤醒后因为stop为true了，所以都会结束
-    _condition.notify_all();
+    condition.notify_all();
     // 等待所有工作线程结束
-    for (std::thread &worker: _workers)
+    for (std::thread &worker: workers)
     {
         worker.join();
     }
@@ -128,7 +131,8 @@ int main()
     for (int i = 0; i < 8; ++i)
     {
         results.emplace_back(pool.enqueue(
-                [i] {
+                [i]
+                {
                     std::cout << "hello " << i << std::endl;
                     std::this_thread::sleep_for(std::chrono::seconds(1));
                     std::cout << "world " << i << std::endl;
