@@ -1,28 +1,31 @@
-﻿#include <iostream>
-#include <thread>
-#include <vector>
+﻿#include <future>
+#include <iostream>
 using namespace std;
 
-vector<int> g_v = {1, 2, 3};
-
-void myprint(int inum)
+void mythread(std::promise<int> &tmp, int calc)
 {
-    cout << "id为" << std::this_thread::get_id() << "的线程打印g_v值" << g_v[0] << g_v[1] << g_v[2] << endl;
-    return;
+    cout << "mythread() start threadid = " << this_thread::get_id() << endl;
+    calc++;
+    calc *= 10;
+    std::chrono::seconds dura(1);
+    std::this_thread::sleep_for(dura);
+    int result = calc;
+    tmp.set_value(result);
+    cout << "mythread() end threadid = " << std::this_thread::get_id() << endl;
 }
 
 int main()
 {
-    vector<thread> mythreads;
-    for (int i = 0; i < 5; ++i)
-    {
-        mythreads.push_back(thread(myprint, i));
-    }
-    for (auto iter = mythreads.begin(); iter != mythreads.end(); ++iter)
-    {
-        iter->join();
-    }
-    cout << "main主函数执行结束！" << endl;
+    cout << "main threadid = " << this_thread::get_id() << endl;
+    std::promise<int> myprom;
+    std::thread t1(mythread, std::ref(myprom), 180);
+    // t1.join();
+    std::future<int> fu1 = myprom.get_future();
+    auto result = fu1.get();
+
+    cout << "result = " << result << endl;
+
+    cout << "The main function line is over!" << endl;
 
     return 0;
 }
