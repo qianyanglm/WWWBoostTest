@@ -1,31 +1,84 @@
-﻿#include <future>
+﻿#include <functional>
 #include <iostream>
-using namespace std;
+#include <memory>
+#include <thread>
+#include <vector>
 
-void mythread(std::promise<int> &tmp, int calc)
+class Thread
 {
-    cout << "mythread() start threadid = " << this_thread::get_id() << endl;
-    calc++;
-    calc *= 10;
-    std::chrono::seconds dura(1);
-    std::this_thread::sleep_for(dura);
-    int result = calc;
-    tmp.set_value(result);
-    cout << "mythread() end threadid = " << std::this_thread::get_id() << endl;
-}
+public:
+    using ThreadFunction = std::function<void()>;
+
+    Thread(ThreadFunction func1, int id): func(func1), thread_id(id) {}
+
+    void Start()
+    {
+        std::cout << "thread " << thread_id << " start working" << std::endl;
+        thread = std::make_shared<std::thread>(func);
+    }
+
+    void Stop()
+    {
+        if (thread->joinable())
+        {
+            thread->join();
+        }
+    }
+
+    ~Thread()
+    {
+        std::cout << "thread " << thread_id << " end working" << std::endl;
+    }
+
+private:
+    std::shared_ptr<std::thread> thread;
+    int thread_id;
+    ThreadFunction func;
+};
+
+class ThreadPool
+{
+public:
+    ThreadPool(): threads_nums(0){};
+
+    ~ThreadPool()
+    {
+        for (int i = 0; i < threads_nums; ++i)
+        {
+            thread_pool[i]->Stop();
+            delete thread_pool[i];
+        }
+    }
+
+    void Start(int threads_num)
+    {
+        threads_nums = threads_num;
+        for (int i = 0; i < threads_num; ++i)
+        {
+            thread_pool.push_back(new Thread(std::bind(&ThreadPool::RunInThread, this, i), i));
+        }
+
+        for (int i = 0; i < threads_num; ++i)
+        {
+            thread_pool[i]->Start();
+        }
+    }
+
+private:
+    std::vector<Thread *> thread_pool;
+    int threads_nums;
+
+    void RunInThread(int id)
+    {
+        std::cout << "RunInThread id = " << id << std::endl;
+    }
+};
 
 int main()
 {
-    cout << "main threadid = " << this_thread::get_id() << endl;
-    std::promise<int> myprom;
-    std::thread t1(mythread, std::ref(myprom), 180);
-    // t1.join();
-    std::future<int> fu1 = myprom.get_future();
-    auto result = fu1.get();
+    ThreadPool pool;
+    pool.Start(8);
 
-    cout << "result = " << result << endl;
-
-    cout << "The main function line is over!" << endl;
-
+    std::this_thread::sleep_for(std::chrono::microseconds(1000));
     return 0;
 }

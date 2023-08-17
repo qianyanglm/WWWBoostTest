@@ -1,10 +1,11 @@
 ﻿/*
  * 简单的C++11线程池，管理一个任务队列和一个工作线程队列，工作线程不断的从任务队列中取任务，然后执行。如果没有任务就等待鑫新任务的到来，添加新任务的时候先添加到任务队列，然后通知任意（条件变量notify_one）一个线程有新的任务来了
  */
-#pragma once
+#include <chrono>
 #include <condition_variable>
 #include <functional>
 #include <future>
+#include <iostream>
 #include <memory>
 #include <mutex>
 #include <queue>
@@ -133,10 +134,6 @@ ThreadPool::~ThreadPool()
         worker.join();
     }
 }
-
-#include <chrono>
-#include <iostream>
-#include <vector>
 
 int main()
 {
