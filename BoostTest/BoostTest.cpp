@@ -57,6 +57,7 @@ inline ThreadPool::ThreadPool(size_t threads): stop(false)
             {
                 std::function<void()> task;
 
+                //{}控制生命周期来控制析构的时间点来更好的利用RAII，task()前就被Unlock了，避免无意义的锁占用
                 {
                     //拿锁（独占所有权式）
                     std::unique_lock<std::mutex> lock(this->queueMutex);
@@ -96,6 +97,7 @@ auto ThreadPool::enqueue(F &&f, Args &&...args) -> std::future<typename std::res
 
     //获取任务的future
     std::future<return_type> res = task->get_future();
+
     {
         //独占拿锁
         std::unique_lock<std::mutex> lock(queueMutex);
