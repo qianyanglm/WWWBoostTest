@@ -4,7 +4,7 @@ using namespace std;
 class A
 {
 public:
-    A() {}
+    A() { cout << "A" << endl; }
 
     ~A() {}
 
@@ -13,8 +13,13 @@ public:
 
 int main()
 {
-    char *ppoint = new char[55];
-    memset(ppoint, 0, 55);
-    delete[] ppoint;
+    string *mystr2 = new string();
+    int *pointi3 = new int();
+    int *pointi1 = new int;
+    A *pa1 = new A;
+    A *pa2 = new A();
+    string *mystr23 = new string(5, 'a');
+    auto mystr3 = new auto(mystr2);
+    string **mystr4 = new (string *)(mystr2);
     return 0;
 }
