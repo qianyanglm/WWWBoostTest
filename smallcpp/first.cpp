@@ -1,102 +1,56 @@
-﻿#include <Windows.h>
-#include <future>
+﻿// debug_malloc.cpp
+// compile by using: cl /EHsc /W4 /D_DEBUG /MDd debug_malloc.cpp
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
+#include <stdlib.h>
+
 #include <iostream>
-#include <thread>
+#include <memory>
+
 using namespace std;
-#define _WINDOWSLJQ_
+using namespace std;
 
 class A
 {
 public:
     A()
     {
-#ifdef _WINDOWSLJQ_
-        InitializeCriticalSection(&my_winsec);//初始化临界区
-#endif
+        // std::cout << "A" << std::endl;
     }
 
-    virtual ~A()
-    {
-#ifdef _WINDOWSLJQ_
-        DeleteCriticalSection(&my_winsec);//释放临界区
-#endif
-    }
-
-    //把收到的消息放入队列的线程
-    void inMsgRecvQueue()
-    {
-        for (int i = 0; i < 100000; ++i)
-        {
-            cout << "inMsgRecvQueue()执行，插入一个元素: " << i << endl;
-#ifdef _WINDOWSLJQ_
-            EnterCriticalSection(&my_winsec);//进入临界区
-            msgRecvQueue.push_back(i);
-            LeaveCriticalSection(&my_winsec);//离开临界区
-#else
-            my_mutex.lock();
-            msgRecvQueue.push_back(i);
-            my_mutex.unlock();
-#endif
-        }
-    }
-
-    bool outMsgLULProc(int &command)
-    {
-#ifdef _WINDOWSLJQ_
-        EnterCriticalSection(&my_winsec);
-        if (!msgRecvQueue.empty())
-        {
-            int command = msgRecvQueue.front();
-            msgRecvQueue.pop_front();
-            LeaveCriticalSection(&my_winsec);
-            return true;
-        }
-        LeaveCriticalSection(&my_winsec);
-#else
-        my_mutex.lock();
-        if (!msgRecvQueue.empty())
-        {
-            int command = msgRecvQueue.front();
-            msgRecvQueue.pop_front();
-            LeaveCriticalSection(&my_winsec);
-            return true;
-        }
-        my_mutex.unlock();
-#endif
-        return false;
-    }
-
-    void outMsgRecvQueue()
-    {
-        int command = 0;
-        for (int i = 0; i < 100000; ++i)
-        {
-            bool result = outMsgLULProc(command);
-            if (result == true)
-            {
-                cout << "outMsgRecvQueue()执行了，从容器中取出一个元素" << command << endl;
-            }
-            else
-            {
-                cout << "outMsgRecvQueue()执行了，但目前收消息队列中是空元素" << i << endl;
-            }
-        }
-        cout << "end" << endl;
-    }
-
-private:
-    std::list<int> msgRecvQueue;
-    std::mutex my_mutex;
-#ifdef _WINDOWSLJQ_
-    //windows下叫临界区，类似于互斥量mutex
-    CRITICAL_SECTION my_winsec;
-#endif
+    // ~A() {}
 };
+
+void myfunc(shared_ptr<int> ptmp)
+{
+    return;
+}
+
+shared_ptr<int> myfunc2(shared_ptr<int> &ptmp)
+{
+    return ptmp;
+}
+
+void myDeleter(int *p)
+{
+    cout << "hello" << endl;
+    // delete p;
+}
 
 int main()
 {
-    cout << "main threadid = " << std::this_thread::get_id() << endl;
+    shared_ptr<int> pi = make_shared<int>(100);
+    weak_ptr<int> piw(pi);
+    weak_ptr<int> piw2(piw);
+    auto pi2 = piw2.lock();
 
-    cout << "Main function execution finished! " << endl;
-    return 0;
+    // pi.reset();
+    cout << pi2 << endl;
+    cout << pi.use_count() << endl;
+    cout << piw.use_count() << endl;
+
+    _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
+    _CrtDumpMemoryLeaks();
+
+    // return 0;
 }
