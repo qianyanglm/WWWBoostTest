@@ -8,35 +8,46 @@
 
 using namespace std;
 
-class A
+class CA;
+class CB;
+
+class CA
 {
 public:
-    A()
-    {
-        // std::cout << "A" << std::endl;
-    }
+    // shared_ptr<CB> m_pbs;
+    weak_ptr<CB> m_pbs;
 
-    // ~A() {}
+    ~CA()
+    {
+        cout << "~A()执行了" << endl;
+    }
 };
 
-void myfunc(shared_ptr<int> ptmp)
+class CB
 {
-    return;
-}
+public:
+    shared_ptr<CA> m_pas;
 
-shared_ptr<int> myfunc2(shared_ptr<int> &ptmp)
+    // weak_ptr<CA> m_pas;
+
+    ~CB()
+    {
+        cout << "~B()执行了" << endl;
+    }
+};
+
+void delete1(int *p)
 {
-    return ptmp;
+    delete p;
 }
 
 int main()
 {
-    // shared_ptr<int> myp(new int(100));
-    // int icount = myp.use_count();
-    // cout << icount << endl;
-
-    int *a = (int *) malloc(sizeof(int));
-    free(a);
+    {
+        int *pi = new int(100);
+        shared_ptr<int> p1(pi, delete1);
+        cout << sizeof(p1) << endl;
+    }
 
     _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
     _CrtDumpMemoryLeaks();

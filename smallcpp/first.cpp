@@ -1,56 +1,23 @@
-﻿// debug_malloc.cpp
-// compile by using: cl /EHsc /W4 /D_DEBUG /MDd debug_malloc.cpp
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#include <stdlib.h>
-
-#include <iostream>
+﻿#include <iostream>
 #include <memory>
 
-using namespace std;
-using namespace std;
-
-class A
+class CT: public std::enable_shared_from_this<CT>
 {
 public:
-    A()
+    std::shared_ptr<CT> getself()
     {
-        // std::cout << "A" << std::endl;
+        return shared_from_this();
     }
-
-    // ~A() {}
 };
-
-void myfunc(shared_ptr<int> ptmp)
-{
-    return;
-}
-
-shared_ptr<int> myfunc2(shared_ptr<int> &ptmp)
-{
-    return ptmp;
-}
-
-void myDeleter(int *p)
-{
-    cout << "hello" << endl;
-    // delete p;
-}
 
 int main()
 {
-    shared_ptr<int> pi = make_shared<int>(100);
-    weak_ptr<int> piw(pi);
-    weak_ptr<int> piw2(piw);
-    auto pi2 = piw2.lock();
+    std::shared_ptr<CT> pct1 = std::make_shared<CT>();
+    std::shared_ptr<CT> pct2 = pct1->getself();
 
-    // pi.reset();
-    cout << pi2 << endl;
-    cout << pi.use_count() << endl;
-    cout << piw.use_count() << endl;
+    std::cout << "pct1: " << pct1 << std::endl;
+    std::cout << "pct1->getself(): " << pct1->getself() << std::endl;
+    std::cout << "pct2: " << pct2 << std::endl;
 
-    _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
-    _CrtDumpMemoryLeaks();
-
-    // return 0;
+    return 0;
 }
