@@ -1,23 +1,22 @@
 ﻿#include <iostream>
 #include <memory>
+using namespace std;
 
-class CT: public std::enable_shared_from_this<CT>
+class A
 {
 public:
-    std::shared_ptr<CT> getself()
-    {
-        return shared_from_this();
-    }
+    A()
+    {}
+
+    ~A() {}
 };
 
 int main()
 {
-    std::shared_ptr<CT> pct1 = std::make_shared<CT>();
-    std::shared_ptr<CT> pct2 = pct1->getself();
-
-    std::cout << "pct1: " << pct1 << std::endl;
-    std::cout << "pct1->getself(): " << pct1->getself() << std::endl;
-    std::cout << "pct2: " << pct2 << std::endl;
-
+    std::unique_ptr<A[]> ptrarray(new A[10]);
+    // std::shared_ptr<A> ptr(new A[10]);
+    shared_ptr<A> ptr2(new A[10], [](A *p)
+                       { delete[] p; });
+    std::shared_ptr<A[]> ptr3(new A[10]);
     return 0;
 }

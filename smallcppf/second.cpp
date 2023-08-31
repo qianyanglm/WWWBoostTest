@@ -1,55 +1,46 @@
 ﻿// debug_malloc.cpp
 // compile by using: cl /EHsc /W4 /D_DEBUG /MDd debug_malloc.cpp
 #define _CRTDBG_MAP_ALLOC
+#include <algorithm>
 #include <crtdbg.h>
-#include <stdlib.h>
-
 #include <iostream>
+#include <memory>
+#include <stdlib.h>
 
 using namespace std;
 
-class CA;
-class CB;
-
-class CA
+class A
 {
 public:
-    // shared_ptr<CB> m_pbs;
-    weak_ptr<CB> m_pbs;
-
-    ~CA()
+    A()
     {
-        cout << "~A()执行了" << endl;
+    }
+
+    ~A()
+    {
     }
 };
 
-class CB
+auto myfunc()
 {
-public:
-    shared_ptr<CA> m_pas;
+    return std::make_unique<string>("I love China!");
+}
 
-    // weak_ptr<CA> m_pas;
-
-    ~CB()
-    {
-        cout << "~B()执行了" << endl;
-    }
-};
-
-void delete1(int *p)
+void mydeleter(string *pdel)
 {
-    delete p;
+    delete pdel;
+    pdel = nullptr;
 }
 
 int main()
 {
     {
-        int *pi = new int(100);
-        shared_ptr<int> p1(pi, delete1);
-        cout << sizeof(p1) << endl;
+        unique_ptr<string> ps(new string("I"));
+        shared_ptr<string> ps2 = move(ps);
+        cout << *ps2 << endl;
     }
 
-    _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
+    // _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
     _CrtDumpMemoryLeaks();
     return 0;
 }
