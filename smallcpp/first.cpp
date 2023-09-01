@@ -1,22 +1,85 @@
 ﻿#include <iostream>
 #include <memory>
+#include <vector>
+
 using namespace std;
 
 class A
 {
 public:
-    A()
-    {}
+    static void *operator new(size_t size);
+    static void operator delete(void *phead);
 
-    ~A() {}
+    static int m_iCount;      //分配计数统计，new一次+1
+    static int m_iMallocCount;//统计malloc次数，malloc一次+1
+
+    A()
+    {
+        cout << "A的构造函数执行了" << endl;
+    }
+
+    ~A()
+    {
+        cout << "A的析构函数执行了" << endl;
+    }
+
+private:
+    A *next;
+    static A *m_FreePosi;    //总是指向一块可以分配出去的内存的首地址
+    static int m_sTrunkCount;//一次分配多少倍该类的内存
 };
+
+void *A::operator new(size_t size)
+{
+    // std::cout << "A::operator new 被调用了!" << std::endl;
+    // A *ppoint = (A *) malloc(size);
+    // return ppoint;
+
+    //不使用传统方式实现。使用内存池实现
+
+    A *tmplink;
+    if (m_FreePosi == nullptr)
+    {
+        //为空，我们要申请内存，申请的是很大一块内存
+        size_t realsize = m_sTrunkCount * size;
+        m_FreePosi = reinterpret_cast<A *>(new char[realsize]);
+
+        tmplink = m_FreePosi;
+
+        //把分配出来的内存链接起来，后续使用(单链表)
+        for (; tmplink != &m_FreePosi[m_iMallocCount - 1]; ++tmplink)
+        {
+            tmplink->next = tmplink + 1;
+        }
+        tmplink->next = nullptr;
+        ++m_iMallocCount;
+    }
+    tmplink = m_FreePosi;
+    m_FreePosi = m_FreePosi->next;
+    ++m_iCount;
+    return tmplink;
+}
+
+void A::operator delete(void *phead)
+{
+    // cout << "A::operator delete 被调用了" << endl;
+    // free(phead);
+
+    //不使用传统方式实现。使用内存池实现
+    (static_cast<A *>(phead))->next = m_FreePosi;
+    m_FreePosi = static_cast<A *>(phead);
+}
+
+int A::m_iCount = 0;
+int A::m_iMallocCount = 0;
+
+A *A::m_FreePosi = nullptr;
+int A::m_sTrunkCount = 5;//一次分配5倍的该类内存作为内存池的大小
 
 int main()
 {
-    std::unique_ptr<A[]> ptrarray(new A[10]);
-    // std::shared_ptr<A> ptr(new A[10]);
-    shared_ptr<A> ptr2(new A[10], [](A *p)
-                       { delete[] p; });
-    std::shared_ptr<A[]> ptr3(new A[10]);
+    A *pa = new A();
+    delete pa;
+
     return 0;
 }
