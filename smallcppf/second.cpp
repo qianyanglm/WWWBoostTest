@@ -92,6 +92,7 @@ int main()
             delete pa;
         }
     }
+    _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
     _CrtDumpMemoryLeaks();
 
     return 0;

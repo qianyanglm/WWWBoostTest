@@ -1,8 +1,4 @@
-﻿// MyProject.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
-//
-//公众号：程序员速成   ，内含优质视频教程，欢迎关注
-
-#include <atomic>
+﻿#include <atomic>
 #include <ctime>
 #include <iostream>
 #include <list>
@@ -13,70 +9,105 @@
 
 using namespace std;//后面再使用诸如std::cout时就可以简写成cout了；
 
+class myallocator
+{
+public:
+    void *allocate(size_t size)
+    {
+        obj *tmplink;
+        if (m_FreePosi == nullptr)
+        {
+            size_t realsize = m_sTrunkCout * size;
+            m_FreePosi = (obj *) malloc(realsize);
+            vectptr.push_back(m_FreePosi);
+            tmplink = m_FreePosi;
+
+            //大块内存里的小内存链接起来,方便后续分配使用
+            for (int i = 0; i < m_sTrunkCout - 1; ++i)
+            {
+                tmplink->next = (obj *) ((char *) tmplink + size);
+                tmplink = tmplink->next;
+            }
+            tmplink->next = nullptr;
+        }
+
+        //如果当前有可用的内存块，就直接从已经分配好的内存块中分配内存
+        //将tmplink指向当前可用内存块，并将m_FreePosi移动到下一个可用内存块，方便下次分配使用
+        tmplink = m_FreePosi;
+        m_FreePosi = m_FreePosi->next;
+        return tmplink;
+    }
+
+    //释放内存
+    void deallocate(void *phead)
+    {
+        // //将传入的内存块的 next 指针设置为当前可用内存块，表示释放的内存块成为可用内存
+        // ((obj *) phead)->next = m_FreePosi;
+        //
+        // //将 m_FreePosi 指向传入的内存块，以便下次分配时可以使用。
+        // m_FreePosi = (obj *) phead;
+        // // if (phead == temP)
+        // // {
+        // //     free(temP);
+        // // }
+
+        for (auto iter = vectptr.begin(); iter != vectptr.end(); iter++)
+        {
+            free(*iter);
+        }
+        vectptr.clear();
+    }
+
+private:
+    struct obj
+    {
+        struct obj *next;//嵌入式指针
+    };
+
+    int m_sTrunkCout = 5;     //分配够5倍内存作为内存池大小
+    obj *m_FreePosi = nullptr;//定义嵌入式指针，跟踪可用内存块
+    vector<obj *> vectptr;    //定义嵌入式指针容器来保存malloc分配的内存地址，然后再释放
+};
+
 class A
 {
 public:
-    static void *operator new(size_t size);
-    static void operator delete(void *phead);
-    static int m_iCount;      //用于分配计数统计，每new一次+1
-    static int m_iMallocCount;//用于统计malloc次数，每malloc一次+1
-private:
-    A *next;
-    static A *m_FreePosi;    //总是指向一块可以分配出去的内存的首地址
-    static int m_sTrunkCount;//一次分配多少倍该类的内存
-};
+    int m_i;
+    int m_j;
 
-void *A::operator new(size_t size)
-{
-    //A *ppoint = (A *)malloc(size); //不再用传统方式实现，而是用内存池实现
-    //return ppoint;
-    A *tmplink;
-    if (m_FreePosi == nullptr)
+public:
+    static myallocator myalloc;
+
+    static void *operator new(size_t size)
     {
-        //为空，我们要申请内存，申请的是很大一块内存
-        size_t realsize = m_sTrunkCount * size;                //申请m_TrunkCount这么多倍的内存
-        m_FreePosi = reinterpret_cast<A *>(new char[realsize]);//这是传统new，调用底层传统malloc
-        tmplink = m_FreePosi;
-
-        //把分配出来的这一大块内存链起来，供后续使用
-        for (; tmplink != &m_FreePosi[m_sTrunkCount - 1]; ++tmplink)
-        {
-            tmplink->next = tmplink + 1;
-        }
-        tmplink->next = nullptr;
-        ++m_iMallocCount;
+        return myalloc.allocate(size);
     }
 
-    tmplink = m_FreePosi;
-    m_FreePosi = m_FreePosi->next;
-    ++m_iCount;
-    return tmplink;
-}
+    static void operator delete(void *phead)
+    {
+        return myalloc.deallocate(phead);
+    }
+};
 
-void A::operator delete(void *phead)
-{
-    free(phead);
-
-    // //free(phead);  //不再用传统方式实现，针对内存池有特别的实现
-    // (static_cast<A *>(phead))->next = m_FreePosi;
-    // m_FreePosi = static_cast<A *>(phead);
-}
-
-//----------------------------------------
-int A::m_iCount = 0;
-int A::m_iMallocCount = 0;
-
-A *A::m_FreePosi = nullptr;
-int A::m_sTrunkCount = 5;//一次分配5倍的该类内存作为内存池的大小
-
-//int A::m_sTrunkCount = 500;
+myallocator A::myalloc;//类A外定义这个静态成员变量
 
 int main()
 {
     {
-        cout << "hello" << endl;
+        A *mypa[100];
+        for (int i = 0; i < 15; ++i)
+        {
+            mypa[i] = new A();
+            printf("%p\n", mypa[i]);
+        }
+        for (int i = 0; i < 15; ++i)
+        {
+            delete mypa[i];
+        }
+        // cout << sizeof(A::myalloc) << endl;
     }
 
+    _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
     _CrtDumpMemoryLeaks();
 
     return 0;
