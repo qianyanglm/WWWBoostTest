@@ -104,7 +104,7 @@ int main()
         {
             delete mypa[i];
         }
-        // cout << sizeof(A::myalloc) << endl;
+        cout << sizeof(A::myalloc) << endl;
     }
 
     _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
