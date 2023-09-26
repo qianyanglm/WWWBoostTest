@@ -1,20 +1,41 @@
-﻿#include <iostream>
-using namespace std;
+﻿#include <stdio.h>
+#include <stdlib.h>
 
-class Foo
+void *operator new(size_t sz)
 {
+    printf("operator new:%d Bytes\n", sz);
+    void *m = malloc(sz);
+    if (!m)
+        puts("out of memory");
+    return m;
+}
+
+void operator delete(void *m)
+{
+    puts("operator delete");
+    free(m);
+}
+
+class S
+{
+    int i[100];
+
 public:
-    void *operator new(std::size_t size)
-    {
-        std::cout << "operator new" << std::endl;
-        return std::malloc(size);
-    }
+    S() { puts("S:S()"); }
+
+    ~S() { puts("~S::S()"); }
 };
 
 int main()
 {
-    Foo *m = new Foo;
-    std::cout << sizeof(m) << std::endl;
-    delete m;
+    puts("(1)Creating & Destroying an int");
+    int *p = new int(47);
+    delete p;
+    puts("(2)Creating & Destroying an S");
+    S *s = new S;
+    delete s;
+    puts("(3)Creating & Destroying S[3]");
+    S *sa = new S[3];
+    delete[] sa;
     return 0;
 }
