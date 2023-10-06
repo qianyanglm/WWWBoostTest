@@ -11,11 +11,8 @@ void test(int arg[])
 
 int main()
 {
-    int a[10] = {
-            1,
-            2,
-            3,
-    };
-    test(a);
+    int b = 6;
+    int &&a = 7;
+    cout << a << endl;
     return 0;
 }

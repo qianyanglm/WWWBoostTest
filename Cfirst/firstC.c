@@ -1,20 +1,11 @@
 ﻿#include <stdio.h>
-
-void test(int arg[])
-{
-    for (unsigned int i = 0; i < sizeof(arg); ++i)
-    {
-        printf("%d\n", arg[i]);
-    }
-}
+#include <stdlib.h>
 
 int main()
 {
-    int a[10] = {
-            1,
-            2,
-            3,
-    };
-    test(a);
+    char str[16] = {0};
+    int n = snprintf(str, sizeof(str), "12345%d\n67890%s1234", 777, "abc");
+    printf("str=%s\n", str);
+    printf("n=%d\n", n);
     return 0;
 }
