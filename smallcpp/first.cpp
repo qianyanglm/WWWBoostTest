@@ -14,5 +14,6 @@ int main()
     int b = 6;
     int &&a = 7;
     cout << a << endl;
+
     return 0;
 }
