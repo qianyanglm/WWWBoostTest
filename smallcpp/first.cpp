@@ -1,19 +1,21 @@
-﻿#include <iostream>
-using namespace std;
-
-void test(int arg[])
-{
-    for (unsigned int i = 0; i < sizeof(arg); ++i)
-    {
-        cout << arg[i] << endl;
-    }
-}
+﻿#include <stdio.h>
+#include <string.h>
 
 int main()
 {
-    int b = 6;
-    int &&a = 7;
-    cout << a << endl;
+    const char str1[] = "abcde2fghi3jk4l";
+    const char str2[] = "34";
+    char *ret;
 
-    return 0;
+    ret = strpbrk(str1, str2);
+    if (ret)
+    {
+        printf("第一个匹配的字符是： %c\n", *ret);
+    }
+    else
+    {
+        printf("未找到字符");
+    }
+
+    return (0);
 }
