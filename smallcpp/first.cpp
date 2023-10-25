@@ -1,21 +1,34 @@
-﻿#include <stdio.h>
-#include <string.h>
+﻿#include "fourthfour.h"
+
+#include <iostream>
+#include <ostream>
 
 int main()
 {
-    const char str1[] = "abcde2fghi3jk4l";
-    const char str2[] = "34";
-    char *ret;
+    std::shared_ptr<Factory> factory;
+    std::shared_ptr<Movie> product;
 
-    ret = strpbrk(str1, str2);
-    if (ret)
+    // 这里假设从配置中读到的是Chinese(运行时决定的)
+    std::string conf = "China";
+
+    // 程序根据当前配置或环境选择创建者的类型
+    if (conf == "China")
     {
-        printf("第一个匹配的字符是： %c\n", *ret);
+        factory = std::make_shared<ChineseProducer>();
+    }
+    else if (conf == "Japan")
+    {
+        factory = std::make_shared<JapaneseProducer>();
+    }
+    else if (conf == "America")
+    {
+        factory = std::make_shared<AmericanProducer>();
     }
     else
     {
-        printf("未找到字符");
+        std::cout << "error conf" << std::endl;
     }
 
-    return (0);
+    product = factory->get_movie();
+    std::cout << "获取一部电影: " << product->get_a_movie() << std::endl;
 }

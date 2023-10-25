@@ -130,6 +130,12 @@
   <ItemGroup>
     <ClCompile Include="first.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="firstone.h" />
+    <ClInclude Include="fourthfour.h" />
+    <ClInclude Include="secondtwo.h" />
+    <ClInclude Include="thirdthree.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

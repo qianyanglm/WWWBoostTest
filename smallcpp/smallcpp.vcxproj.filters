@@ -19,4 +19,18 @@
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="firstone.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="secondtwo.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdthree.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="fourthfour.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
