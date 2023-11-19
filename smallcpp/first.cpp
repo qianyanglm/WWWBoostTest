@@ -21,6 +21,8 @@ enum test1 { code = 0,
 
 int main()
 {
+    std::cout << code << std::endl;
     std::cout << code1 << std::endl;
+    std::cout << code2 << std::endl;
     return 0;
 }
