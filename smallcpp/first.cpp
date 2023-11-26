@@ -1,28 +1,36 @@
 ﻿#include <iostream>
-#include <ostream>
+using namespace std;
 
-struct student
-{
-    char mark;
-    long num;
-    float score;
-};
+void bubbleSort(int arr[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (arr[j] > arr[j + 1]) {
+                // 交换相邻元素
+                int temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+        }
+    }
+}
 
-union test
-{
-    char mark;
-    long num;
-    float score;
-};
+int main() {
+    int arr[] = { 64, 34, 25, 12, 22, 11, 90 };
+    int n = sizeof(arr) / sizeof(arr[0]);
 
-enum test1 { code = 0,
-             code1,
-             code2 };
+    cout << "排序前的数组：";
+    for (int i = 0; i < n; i++) {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
 
-int main()
-{
-    std::cout << code << std::endl;
-    std::cout << code1 << std::endl;
-    std::cout << code2 << std::endl;
+    bubbleSort(arr, n);
+
+    cout << "排序后的数组：";
+    for (int i = 0; i < n; i++) {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
+
     return 0;
 }
