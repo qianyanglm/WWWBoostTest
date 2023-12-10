@@ -3,11 +3,12 @@
 #include <string>
 using namespace std;
 
-int f()
-{}
+void f()
+{
+    printf("dw");
+}
 
 int main()
 {
-
-    retrun 0;
+    return 0;
 }
